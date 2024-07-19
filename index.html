@@ -147,18 +147,17 @@
       try {
         const response = await fetch('http://localhost:3000/upload', {
           method: 'POST',
-          body: formData,
-          onUploadProgress: progressEvent => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            progressBar.style.width = `${percentCompleted}%`;
-            progressBar.textContent = `${percentCompleted}%`;
-          }
+          body: formData
         });
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const result = await response.json();
-        document.getElementById('result').innerHTML = formatResult(result.analysis);
+        if (result.analysis) {
+          document.getElementById('result').innerHTML = formatResult(result.analysis);
+        } else {
+          throw new Error('Analysis result is missing');
+        }
       } catch (error) {
         console.error('Error:', error);
         document.getElementById('result').textContent = `An error occurred: ${error.message}`;
@@ -181,18 +180,20 @@
       try {
         const response = await fetch('http://localhost:3000/compare', {
           method: 'POST',
-          body: formData,
-          onUploadProgress: progressEvent => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            progressBar.style.width = `${percentCompleted}%`;
-            progressBar.textContent = `${percentCompleted}%`;
-          }
+          body: formData
         });
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const result = await response.json();
-        document.getElementById('compareResult').innerHTML = formatResult(result.analysis1) + '<br><br>' + formatResult(result.analysis2);
+        if (result.analysis1 && result.analysis2) {
+          document.getElementById('compareResult').innerHTML = 
+            '<div>' + formatResult(result.analysis1) + '</div>' +
+            '<hr>' +
+            '<div>' + formatResult(result.analysis2) + '</div>';
+        } else {
+          throw new Error('Analysis results are missing');
+        }
       } catch (error) {
         console.error('Error:', error);
         document.getElementById('compareResult').textContent = `An error occurred: ${error.message}`;
