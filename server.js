@@ -42,7 +42,7 @@ app.post('/upload', upload.single('pdfFile'), async (req, res) => {
           res.status(500).json({ error: 'An error occurred' });
         } else {
           console.log('Data inserted successfully with ID:', this.lastID);
-          res.json({ id: this.lastID, ...analysisResult });
+          res.json({ id: this.lastID, analysis: analysisResult });
         }
       }
     );
@@ -55,8 +55,8 @@ app.post('/upload', upload.single('pdfFile'), async (req, res) => {
 app.post('/compare', upload.fields([{ name: 'pdfFile1', maxCount: 1 }, { name: 'pdfFile2', maxCount: 1 }]), async (req, res) => {
   try {
     console.log('Received files:', req.files);
-    const pdfPath1 = req.files.pdfFile1[0].path;
-    const pdfPath2 = req.files.pdfFile2[0].path;
+    const pdfPath1 = req.files['pdfFile1'][0].path;
+    const pdfPath2 = req.files['pdfFile2'][0].path;
     console.log('Analyzing invoices...');
     const analysisResult1 = await analyzeInvoice(pdfPath1);
     const analysisResult2 = await analyzeInvoice(pdfPath2);

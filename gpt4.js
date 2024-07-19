@@ -20,10 +20,7 @@ async function analyzeInvoice(pdfPath) {
     });
 
     const analysisResult = response.choices[0].message.content.trim();
-
-    return {
-      analysis: analysisResult,
-    };
+    return analysisResult;
   } catch (error) {
     console.error('Error:', error);
     throw error;
