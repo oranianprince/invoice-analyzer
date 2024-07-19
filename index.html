@@ -153,10 +153,11 @@
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const result = await response.json();
-        if (result.analysis) {
+        console.log(result); // Log the result to debug
+        if (typeof result.analysis === 'string') {
           document.getElementById('result').innerHTML = formatResult(result.analysis);
         } else {
-          throw new Error('Analysis result is missing');
+          throw new Error('Analysis result is not a string');
         }
       } catch (error) {
         console.error('Error:', error);
@@ -186,13 +187,14 @@
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const result = await response.json();
-        if (result.analysis1 && result.analysis2) {
+        console.log(result); // Log the result to debug
+        if (typeof result.analysis1 === 'string' && typeof result.analysis2 === 'string') {
           document.getElementById('compareResult').innerHTML = 
             '<div>' + formatResult(result.analysis1) + '</div>' +
             '<hr>' +
             '<div>' + formatResult(result.analysis2) + '</div>';
         } else {
-          throw new Error('Analysis results are missing');
+          throw new Error('Analysis results are not strings');
         }
       } catch (error) {
         console.error('Error:', error);
@@ -221,6 +223,10 @@
     });
 
     function formatResult(text) {
+      if (typeof text !== 'string') {
+        console.error('Invalid input for formatResult:', text);
+        return 'Invalid input for formatResult';
+      }
       return text
         .replace(/###/g, '<h3>')
         .replace(/##/g, '<h4>')
