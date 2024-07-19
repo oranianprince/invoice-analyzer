@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pest Control Invoice Analyzer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #5c6bc0;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #3f51b5;
+    }
+    #result {
+      margin-top: 20px;
+      white-space: pre-wrap; /* Keep formatting */
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    h3, h4 {
+      color: #333;
+    }
+    p, li {
+      color: #555;
+    }
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Pest Control Invoice Analyzer</h1>
+    <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+      <input type="file" id="pdfFile" name="pdfFile" accept=".pdf" required>
+      <button type="submit">Upload and Analyze</button>
+    </form>
+    <button id="clearButton">Clear PDF</button>
+    <div id="result"></div>
+  </div>
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      try {
+        const response = await fetch('http://localhost:3000/upload', {
+          method: 'POST',
+          body: formData
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const result = await response.json();
+        document.getElementById('result').innerHTML = formatResult(result.analysis);
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('result').textContent = `An error occurred: ${error.message}`;
+      }
+    });
+
+    document.getElementById('clearButton').addEventListener('click', function() {
+      document.getElementById('pdfFile').value = '';
+      document.getElementById('result').textContent = '';
+    });
+
+    function formatResult(text) {
+      return text
+        .replace(/###/g, '<h3>')
+        .replace(/##/g, '<h4>')
+        .replace(/-\s/g, '<li>')
+        .replace(/\*\*/g, '<strong>')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n/g, '<br>')
+        .replace(/1\./g, '<ol><li>')
+        .replace(/2\./g, '</li><li>')
+        .replace(/3\./g, '</li><li>')
+        .replace(/4\./g, '</li><li>')
+        .replace(/5\./g, '</li><li>')
+        .replace(/6\./g, '</li><li>')
+        .replace(/7\./g, '</li><li>')
+        .replace(/8\./g, '</li><li>')
+        .replace(/9\./g, '</li><li>')
+        .replace(/<\/li><br>/g, '</li></ol><br>')
+        .replace(/<\/h3>/g, '</h3>')
+        .replace(/<\/strong>/g, '</strong>');
+    }
+  </script>
+</body>
+</html>
