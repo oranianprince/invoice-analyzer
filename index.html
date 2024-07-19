@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pest Control Invoice Analyzer</title>
+  <title>Invoice Analyzer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -95,7 +95,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Pest Control Invoice Analyzer</h1>
+    <h1>Invoice Analyzer</h1>
     <div class="tabs">
       <div class="tab active" data-tab="single">Single PDF Analysis</div>
       <div class="tab" data-tab="compare">Compare Two PDFs</div>
@@ -106,6 +106,7 @@
         <div id="uploadedFileSingle"></div>
         <button type="submit">Upload and Analyze</button>
       </form>
+      <button id="clearButtonSingle">Clear PDF</button>
       <div class="progress-bar" id="progressBarSingle"></div>
       <div id="result"></div>
     </div>
@@ -117,6 +118,7 @@
         <div id="uploadedFileCompare2"></div>
         <button type="submit">Upload and Compare</button>
       </form>
+      <button id="clearButtonCompare">Clear PDFs</button>
       <div class="progress-bar" id="progressBarCompare"></div>
       <div id="compareResult"></div>
     </div>
@@ -190,11 +192,31 @@
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const result = await response.json();
-        document.getElementById('compareResult').innerHTML = formatResult(result.analysis);
+        document.getElementById('compareResult').innerHTML = formatResult(result.analysis1) + '<br><br>' + formatResult(result.analysis2);
       } catch (error) {
         console.error('Error:', error);
         document.getElementById('compareResult').textContent = `An error occurred: ${error.message}`;
       }
+    });
+
+    // Clear Single PDF upload
+    document.getElementById('clearButtonSingle').addEventListener('click', function() {
+      document.getElementById('pdfFileSingle').value = '';
+      document.getElementById('uploadedFileSingle').textContent = '';
+      document.getElementById('result').textContent = '';
+      document.getElementById('progressBarSingle').style.width = '0%';
+      document.getElementById('progressBarSingle').textContent = '';
+    });
+
+    // Clear Compare PDFs upload
+    document.getElementById('clearButtonCompare').addEventListener('click', function() {
+      document.getElementById('pdfFileCompare1').value = '';
+      document.getElementById('pdfFileCompare2').value = '';
+      document.getElementById('uploadedFileCompare1').textContent = '';
+      document.getElementById('uploadedFileCompare2').textContent = '';
+      document.getElementById('compareResult').textContent = '';
+      document.getElementById('progressBarCompare').style.width = '0%';
+      document.getElementById('progressBarCompare').textContent = '';
     });
 
     function formatResult(text) {
