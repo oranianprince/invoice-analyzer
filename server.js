@@ -8,7 +8,9 @@ const fs = require('fs');
 
 const app = express();
 app.use(cors());
-app.use(express.static('public')); // Serve static files from the "public" directory
+app.use(express.static('public'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -26,7 +28,7 @@ db.run(`CREATE TABLE IF NOT EXISTS quotes (
 )`);
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html'); // Serve the index.html file for the root route
+  res.sendFile(__dirname + '/public/index.html');
 });
 
 app.post('/upload', upload.single('pdfFile'), async (req, res) => {
@@ -38,7 +40,7 @@ app.post('/upload', upload.single('pdfFile'), async (req, res) => {
     console.log('Invoice analyzed:', analysisResult);
 
     db.run(`INSERT INTO quotes (total_cost, equipment_models, labor_costs)
-            VALUES (?, ?, ?)`,
+      VALUES (?, ?, ?)`,
       [0, 'N/A', 0],
       function (err) {
         if (err) {
@@ -65,12 +67,15 @@ app.post('/compare', upload.fields([{ name: 'pdfFile1', maxCount: 1 }, { name: '
     const analysisResult1 = await analyzeInvoice(pdfPath1);
     const analysisResult2 = await analyzeInvoice(pdfPath2);
     console.log('Invoices analyzed:', analysisResult1, analysisResult2);
-
     res.json({ analysis1: analysisResult1, analysis2: analysisResult2 });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'An error occurred' });
   }
+});
+
+app.get('/test', (req, res) => {
+  res.json({ message: 'Test successful' });
 });
 
 const PORT = process.env.PORT || 3000;
