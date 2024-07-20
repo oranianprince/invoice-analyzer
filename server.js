@@ -9,6 +9,7 @@ const fs = require('fs');
 
 const app = express();
 app.use(cors());
+app.use(express.static('public')); // Serve static files from the "public" directory
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -24,6 +25,10 @@ db.run(`CREATE TABLE IF NOT EXISTS quotes (
   equipment_models TEXT,
   labor_costs REAL
 )`);
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html'); // Serve the index.html file for the root route
+});
 
 app.post('/upload', upload.single('pdfFile'), async (req, res) => {
   try {
