@@ -83,6 +83,18 @@ app.post('/test-upload', upload.single('testFile'), (req, res) => {
     res.json({ message: 'Test upload received', file: req.file });
   });
 
+app.post('/test-upload', upload.single('testFile'), (req, res) => {
+    console.log('Test upload route hit');
+    console.log('Received file:', req.file);
+    res.json({ message: 'Test upload received', file: req.file });
+  });
+  
+app.post('/upload', upload.single('pdfFile'), async (req, res) => {
+    console.log('Upload route hit');
+    console.log('Received file:', req.file);
+    // ... rest of your code ...
+  });
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
