@@ -18,7 +18,7 @@ async function analyzeInvoice(pdfPath) {
         },
         { 
           role: 'user', 
-          content: `Please analyze this invoice and extract only the information related to the specific services provided to the client or job mentioned in the invoice. The analysis should include the following:
+          content: `Please analyze this invoice and extract only the information related to the specific services provided to the client or job mentioned in the invoice. The analysis should be formatted in tables with headers in bold and normal font size, and the content smaller and not bold. Include the following sections:
 
 1. **Identification of Services**: List all services mentioned in the invoice specific to the client/job.
 2. **Detailed Description**: Provide a detailed description of each service listed, focusing on what exactly will be done.
