@@ -18,7 +18,7 @@ async function analyzeInvoice(pdfPath) {
         },
         { 
           role: 'user', 
-          content: `Please analyze this invoice and extract only the information related to the specific services provided to the client or job mentioned in the invoice. The analysis should be formatted in tables with headers in bold and normal font size, and the content smaller and not bold. Include the following sections:
+          content: `Please analyze this invoice and extract only the information related to the specific services provided to the client or job mentioned in the invoice. Format the analysis in proper HTML tables with headers in bold and normal font size, and the content in smaller and not bold font. Include the following sections:
 
 1. **Identification of Services**: List all services mentioned in the invoice specific to the client/job.
 2. **Detailed Description**: Provide a detailed description of each service listed, focusing on what exactly will be done.
@@ -30,7 +30,7 @@ async function analyzeInvoice(pdfPath) {
 Focus solely on the services provided for this particular client/job as detailed in the invoice:\n\n${pdfContent}`
         }
       ],
-      max_tokens: 1000,
+      max_tokens: 1500,
       temperature: 0.5,
     });
 

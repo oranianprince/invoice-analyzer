@@ -174,7 +174,7 @@
         const result = await response.json();
         console.log(result); // Log the result to debug
         if (typeof result.analysis === 'string') {
-          document.getElementById('result').innerHTML = formatResult(result.analysis);
+          document.getElementById('result').innerHTML = result.analysis;
         } else {
           throw new Error('Analysis result is not a string');
         }
@@ -209,9 +209,9 @@
         console.log(result); // Log the result to debug
         if (typeof result.analysis1 === 'string' && typeof result.analysis2 === 'string') {
           document.getElementById('compareResult').innerHTML = 
-            '<div>' + formatResult(result.analysis1) + '</div>' +
+            '<div>' + result.analysis1 + '</div>' +
             '<hr>' +
-            '<div>' + formatResult(result.analysis2) + '</div>';
+            '<div>' + result.analysis2 + '</div>';
         } else {
           throw new Error('Analysis results are not strings');
         }
@@ -240,32 +240,6 @@
       document.getElementById('progressBarCompare').style.width = '0%';
       document.getElementById('progressBarCompare').textContent = '';
     });
-
-    function formatResult(text) {
-      if (typeof text !== 'string') {
-        console.error('Invalid input for formatResult:', text);
-        return 'Invalid input for formatResult';
-      }
-      return text
-        .replace(/###/g, '<h3>')
-        .replace(/##/g, '<h4>')
-        .replace(/-\s/g, '<li>')
-        .replace(/\*\*/g, '<strong>')
-        .replace(/\n\n/g, '<br><br>')
-        .replace(/\n/g, '<br>')
-        .replace(/1\./g, '<ol><li>')
-        .replace(/2\./g, '</li><li>')
-        .replace(/3\./g, '</li><li>')
-        .replace(/4\./g, '</li><li>')
-        .replace(/5\./g, '</li><li>')
-        .replace(/6\./g, '</li><li>')
-        .replace(/7\./g, '</li><li>')
-        .replace(/8\./g, '</li><li>')
-        .replace(/9\./g, '</li><li>')
-        .replace(/<\/li><br>/g, '</li></ol><br>')
-        .replace(/<\/h3>/g, '</h3>')
-        .replace(/<\/strong>/g, '</strong>');
-    }
   </script>
 </body>
 </html>
