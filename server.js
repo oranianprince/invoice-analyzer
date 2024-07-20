@@ -78,6 +78,11 @@ app.get('/test', (req, res) => {
   res.json({ message: 'Test successful' });
 });
 
+app.post('/test-upload', upload.single('testFile'), (req, res) => {
+    console.log('Test upload received:', req.file);
+    res.json({ message: 'Test upload received', file: req.file });
+  });
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
