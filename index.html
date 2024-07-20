@@ -120,9 +120,7 @@
       <div class="tab" data-tab="compare">Compare Two PDFs</div>
     </div>
     <div id="single" class="tab-content active">
-      <form id="uploadFormSingle" action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" id="pdfFileSingle" name="pdfFile" accept=".pdf" required>
-        <div id="uploadedFileSingle"></div>
+        <form id="uploadFormSingle" action="/upload" method="POST" enctype="multipart/form-data">        <div id="uploadedFileSingle"></div>
         <button type="submit">Upload and Analyze</button>
       </form>
       <button id="clearButtonSingle">Clear PDF</button>
@@ -130,8 +128,7 @@
       <div id="result"></div>
     </div>
     <div id="compare" class="tab-content">
-      <form id="uploadFormCompare" action="/compare" method="POST" enctype="multipart/form-data">
-        <input type="file" id="pdfFileCompare1" name="pdfFile1" accept=".pdf" required>
+        <form id="uploadFormCompare" action="/compare" method="POST" enctype="multipart/form-data">        <input type="file" id="pdfFileCompare1" name="pdfFile1" accept=".pdf" required>
         <input type="file" id="pdfFileCompare2" name="pdfFile2" accept=".pdf" required>
         <div id="uploadedFileCompare1"></div>
         <div id="uploadedFileCompare2"></div>
@@ -155,8 +152,32 @@
 
     // Single PDF upload
     document.getElementById('uploadFormSingle').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
+  e.preventDefault();
+  const formData = new FormData(this);
+  const resultDiv = document.getElementById('result');
+  
+  try {
+    console.log('Attempting to upload file...');
+    const response = await fetch('/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Response data:', data);
+    
+    resultDiv.innerHTML = data.analysis || 'Analysis completed, but no results returned.';
+  } catch (error) {
+    console.error('Error during fetch:', error);
+    resultDiv.textContent = `An error occurred: ${error.message}`;
+  }
+});
       const fileInput = document.getElementById('pdfFileSingle');
       const uploadedFileDiv = document.getElementById('uploadedFileSingle');
       const progressBar = document.getElementById('progressBarSingle');
@@ -186,8 +207,37 @@
 
     // Compare PDFs upload
     document.getElementById('uploadFormCompare').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
+  e.preventDefault();
+  const formData = new FormData(this);
+  const resultDiv = document.getElementById('compareResult');
+  
+  try {
+    console.log('Attempting to upload files for comparison...');
+    const response = await fetch('/compare', {
+      method: 'POST',
+      body: formData
+    });
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Response data:', data);
+    
+    resultDiv.innerHTML = `
+      <h3>Analysis of First PDF:</h3>
+      <div>${data.analysis1 || 'No results'}</div>
+      <h3>Analysis of Second PDF:</h3>
+      <div>${data.analysis2 || 'No results'}</div>
+    `;
+  } catch (error) {
+    console.error('Error during fetch:', error);
+    resultDiv.textContent = `An error occurred: ${error.message}`;
+  }
+});
       const fileInput1 = document.getElementById('pdfFileCompare1');
       const fileInput2 = document.getElementById('pdfFileCompare2');
       const uploadedFileDiv1 = document.getElementById('uploadedFileCompare1');
