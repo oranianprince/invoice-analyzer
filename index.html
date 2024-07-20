@@ -164,7 +164,7 @@
       progressBar.style.width = '0%';
       progressBar.textContent = '0%';
       try {
-        const response = await fetch('/upload', {
+        const response = await fetch('http://localhost:3000/upload', {
           method: 'POST',
           body: formData
         });
@@ -198,28 +198,41 @@
       progressBar.style.width = '0%';
       progressBar.textContent = '0%';
       try {
-        const response = await fetch('/compare', {
+        const response = await fetch('http://localhost:3000/compare', {
           method: 'POST',
           body: formData
         });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const result = await response.json();
-        console.log(result); // Log the result to debug
-        if (typeof result.analysis1 === 'string' && typeof result.analysis2 === 'string') {
-          document.getElementById('compareResult').innerHTML = 
-            '<div>' + result.analysis1 + '</div>' +
-            '<hr>' +
-            '<div>' + result.analysis2 + '</div>';
-        } else {
-          throw new Error('Analysis results are not strings');
-        }
+        const { jobId } = await response.json();
+        checkStatus(jobId);
       } catch (error) {
         console.error('Error:', error);
         document.getElementById('compareResult').textContent = `An error occurred: ${error.message}`;
       }
     });
+
+    async function checkStatus(jobId) {
+      const progressBar = document.getElementById('progressBarCompare');
+      const compareResult = document.getElementById('compareResult');
+      progressBar.style.width = '50%';
+      progressBar.textContent = 'Processing...';
+      let status = 'processing';
+      while (status === 'processing') {
+        const response = await fetch(`http://localhost:3000/status/${jobId}`);
+        const result = await response.json();
+        status = result.status;
+        if (status === 'complete') {
+          progressBar.style.width = '100%';
+          progressBar.textContent = 'Complete';
+          compareResult.innerHTML = `<div>${result.result.analysis1}</div><hr><div>${result.result.analysis2}</div>`;
+        } else if (status === 'error') {
+          progressBar.style.width = '100%';
+          progressBar.textContent = 'Error';
+          compareResult.textContent = `An error occurred: ${result.result}`;
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Poll every second
+        }
+      }
+    }
 
     // Clear Single PDF upload
     document.getElementById('clearButtonSingle').addEventListener('click', function() {
