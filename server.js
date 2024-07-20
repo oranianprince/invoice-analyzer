@@ -4,7 +4,6 @@ const multer = require('multer');
 const sqlite3 = require('sqlite3').verbose();
 const { analyzeInvoice } = require('./gpt4');
 const cors = require('cors');
-const OpenAI = require('openai');
 const fs = require('fs');
 
 const app = express();
