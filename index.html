@@ -3,10 +3,113 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-store" />
   <title>Invoice Analyzer</title>
   <style>
-    /* Your existing CSS styles here */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .tabs {
+      display: flex;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 10px;
+      flex: 1;
+      text-align: center;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      border-bottom: 2px solid #5c6bc0;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #5c6bc0;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #3f51b5;
+    }
+    #result, #compareResult {
+      margin-top: 20px;
+      white-space: pre-wrap; /* Keep formatting */
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    h3, h4 {
+      color: #333;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    p, li {
+      color: #555;
+      font-size: 0.9em;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .progress-bar {
+      width: 0;
+      height: 20px;
+      background-color: #5c6bc0;
+      text-align: center;
+      color: white;
+      border-radius: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      font-weight: bold;
+    }
+    td {
+      font-size: 0.9em;
+    }
   </style>
 </head>
 <body>
@@ -39,7 +142,6 @@
       <div id="compareResult"></div>
     </div>
   </div>
-
   <script>
     // Tab functionality
     document.querySelectorAll('.tab').forEach(tab => {
@@ -55,35 +157,30 @@
     document.getElementById('uploadFormSingle').addEventListener('submit', async function(e) {
       e.preventDefault();
       const formData = new FormData(this);
-      const resultDiv = document.getElementById('result');
       const fileInput = document.getElementById('pdfFileSingle');
       const uploadedFileDiv = document.getElementById('uploadedFileSingle');
       const progressBar = document.getElementById('progressBarSingle');
-      
       uploadedFileDiv.textContent = `Uploaded file: ${fileInput.files[0].name}`;
       progressBar.style.width = '0%';
       progressBar.textContent = '0%';
-      
       try {
-        console.log('Attempting to upload file...');
-        const response = await fetch('https://quote-analyzer-c9e060554010.herokuapp.com/upload', {
+        const response = await fetch('/upload', {
           method: 'POST',
           body: formData
         });
-        
-        console.log('Response status:', response.status);
-        
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
-        const data = await response.json();
-        console.log('Response data:', data);
-        
-        resultDiv.innerHTML = data.analysis || 'Analysis completed, but no results returned.';
+        const result = await response.json();
+        console.log(result); // Log the result to debug
+        if (typeof result.analysis === 'string') {
+          document.getElementById('result').innerHTML = result.analysis;
+        } else {
+          throw new Error('Analysis result is not a string');
+        }
       } catch (error) {
-        console.error('Error during fetch:', error);
-        resultDiv.textContent = `An error occurred: ${error.message}`;
+        console.error('Error:', error);
+        document.getElementById('result').textContent = `An error occurred: ${error.message}`;
       }
     });
 
@@ -91,43 +188,36 @@
     document.getElementById('uploadFormCompare').addEventListener('submit', async function(e) {
       e.preventDefault();
       const formData = new FormData(this);
-      const resultDiv = document.getElementById('compareResult');
       const fileInput1 = document.getElementById('pdfFileCompare1');
       const fileInput2 = document.getElementById('pdfFileCompare2');
       const uploadedFileDiv1 = document.getElementById('uploadedFileCompare1');
       const uploadedFileDiv2 = document.getElementById('uploadedFileCompare2');
       const progressBar = document.getElementById('progressBarCompare');
-      
       uploadedFileDiv1.textContent = `Uploaded file: ${fileInput1.files[0].name}`;
       uploadedFileDiv2.textContent = `Uploaded file: ${fileInput2.files[0].name}`;
       progressBar.style.width = '0%';
       progressBar.textContent = '0%';
-      
       try {
-        console.log('Attempting to upload files for comparison...');
-        const response = await fetch('https://quote-analyzer-c9e060554010.herokuapp.com/compare', {
+        const response = await fetch('/compare', {
           method: 'POST',
           body: formData
         });
-        
-        console.log('Response status:', response.status);
-        
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
-        const data = await response.json();
-        console.log('Response data:', data);
-        
-        resultDiv.innerHTML = `
-          <h3>Analysis of First PDF:</h3>
-          <div>${data.analysis1 || 'No results'}</div>
-          <h3>Analysis of Second PDF:</h3>
-          <div>${data.analysis2 || 'No results'}</div>
-        `;
+        const result = await response.json();
+        console.log(result); // Log the result to debug
+        if (typeof result.analysis1 === 'string' && typeof result.analysis2 === 'string') {
+          document.getElementById('compareResult').innerHTML = 
+            '<div>' + result.analysis1 + '</div>' +
+            '<hr>' +
+            '<div>' + result.analysis2 + '</div>';
+        } else {
+          throw new Error('Analysis results are not strings');
+        }
       } catch (error) {
-        console.error('Error during fetch:', error);
-        resultDiv.textContent = `An error occurred: ${error.message}`;
+        console.error('Error:', error);
+        document.getElementById('compareResult').textContent = `An error occurred: ${error.message}`;
       }
     });
 
@@ -149,29 +239,6 @@
       document.getElementById('compareResult').textContent = '';
       document.getElementById('progressBarCompare').style.width = '0%';
       document.getElementById('progressBarCompare').textContent = '';
-    });
-
-    // Test Upload
-    document.getElementById('testUploadForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      try {
-        console.log('Attempting test upload...');
-        const response = await fetch('/test-upload', {
-          method: 'POST',
-          body: formData
-        });
-        console.log('Test upload response status:', response.status);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const result = await response.json();
-        console.log('Test upload result:', result);
-        alert('Test upload successful!');
-      } catch (error) {
-        console.error('Error during test upload:', error);
-        alert(`Test upload failed: ${error.message}`);
-      }
     });
   </script>
 </body>
