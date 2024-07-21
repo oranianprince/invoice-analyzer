@@ -62,9 +62,9 @@ app.get('/status/:id', async (req, res) => {
     console.log(`Job ${jobId} result:`, result);
     
     if (state === 'completed') {
-      res.json({ status: 'completed', result });
+      res.json({ status: 'completed', ...result });
     } else if (state === 'failed') {
-      res.json({ status: 'failed', result: job.failedReason });
+      res.json({ status: 'failed', error: job.failedReason });
     } else {
       res.json({ status: 'processing' });
     }

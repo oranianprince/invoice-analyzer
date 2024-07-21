@@ -56,19 +56,20 @@
       while (status === 'processing') {
         const response = await fetch(`/status/${jobId}`);
         const result = await response.json();
+        console.log('Status response:', result); // Add this line for debugging
         status = result.status;
         if (status === 'completed') {
           progressBar.style.width = '100%';
           progressBar.textContent = 'Complete';
-          if (typeof result.result.analysis === 'string') {
-            resultDiv.textContent = result.result.analysis;
+          if (typeof result.analysis === 'string') {
+            resultDiv.textContent = result.analysis;
           } else {
             resultDiv.textContent = 'Unexpected analysis result format';
           }
         } else if (status === 'failed') {
           progressBar.style.width = '100%';
           progressBar.textContent = 'Error';
-          resultDiv.textContent = `An error occurred: ${result.result}`;
+          resultDiv.textContent = `An error occurred: ${result.error || 'Unknown error'}`;
         } else {
           await new Promise(resolve => setTimeout(resolve, 1000)); // Poll every second
         }
@@ -119,19 +120,20 @@
       while (status === 'processing') {
         const response = await fetch(`/status/${jobId}`);
         const result = await response.json();
+        console.log('Status response:', result); // Add this line for debugging
         status = result.status;
         if (status === 'completed') {
           progressBar.style.width = '100%';
           progressBar.textContent = 'Complete';
-          if (typeof result.result.analysis1 === 'string' && typeof result.result.analysis2 === 'string') {
-            compareResultDiv.innerHTML = `<div>${result.result.analysis1}</div><hr><div>${result.result.analysis2}</div>`;
+          if (typeof result.analysis1 === 'string' && typeof result.analysis2 === 'string') {
+            compareResultDiv.innerHTML = `<div>${result.analysis1}</div><hr><div>${result.analysis2}</div>`;
           } else {
             compareResultDiv.textContent = 'Unexpected analysis result format';
           }
         } else if (status === 'failed') {
           progressBar.style.width = '100%';
           progressBar.textContent = 'Error';
-          compareResultDiv.textContent = `An error occurred: ${result.result}`;
+          compareResultDiv.textContent = `An error occurred: ${result.error || 'Unknown error'}`;
         } else {
           await new Promise(resolve => setTimeout(resolve, 1000)); // Poll every second
         }
