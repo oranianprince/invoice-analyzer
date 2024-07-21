@@ -13,15 +13,7 @@
     <!-- ... (keep the existing HTML structure) ... -->
   </div>
   <script>
-    // Tab functionality (keep as is)
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.tab).classList.add('active');
-      });
-    });
+    // ... (keep the existing tab functionality) ...
 
     // Single PDF upload
     document.getElementById('uploadFormSingle').addEventListener('submit', async function(e) {
@@ -69,7 +61,7 @@
           progressBar.style.width = '100%';
           progressBar.textContent = 'Complete';
           if (typeof result.result.analysis === 'string') {
-            resultDiv.innerHTML = result.result.analysis;
+            resultDiv.textContent = result.result.analysis;
           } else {
             resultDiv.textContent = 'Unexpected analysis result format';
           }
@@ -146,24 +138,7 @@
       }
     }
 
-    // Clear buttons (keep as is)
-    document.getElementById('clearButtonSingle').addEventListener('click', function() {
-      document.getElementById('pdfFileSingle').value = '';
-      document.getElementById('uploadedFileSingle').textContent = '';
-      document.getElementById('result').textContent = '';
-      document.getElementById('progressBarSingle').style.width = '0%';
-      document.getElementById('progressBarSingle').textContent = '';
-    });
-
-    document.getElementById('clearButtonCompare').addEventListener('click', function() {
-      document.getElementById('pdfFileCompare1').value = '';
-      document.getElementById('pdfFileCompare2').value = '';
-      document.getElementById('uploadedFileCompare1').textContent = '';
-      document.getElementById('uploadedFileCompare2').textContent = '';
-      document.getElementById('compareResult').textContent = '';
-      document.getElementById('progressBarCompare').style.width = '0%';
-      document.getElementById('progressBarCompare').textContent = '';
-    });
+    // ... (keep the existing clear button functionality) ...
   </script>
 </body>
 </html>
