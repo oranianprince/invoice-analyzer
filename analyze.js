@@ -1,5 +1,3 @@
-// analyze.js
-
 const analyze = async (filePath1, filePath2) => {
     // Placeholder for your analysis logic
     // Implement the actual analysis here

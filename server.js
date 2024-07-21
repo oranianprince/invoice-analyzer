@@ -1,63 +1,50 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
-const cors = require('cors');
-const path = require('path');
-const pdfQueue = require('./queue'); // Import the queue
+const pdfQueue = require('./queue');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 4003;
 
-app.use(cors());
 app.use(fileUpload());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.post('/upload', async (req, res) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
+// Endpoint to handle PDF uploads and queue the processing job
+app.post('/compare', async (req, res) => {
+  if (!req.files || !req.files.file1 || !req.files.file2) {
     return res.status(400).send('No files were uploaded.');
   }
 
-  let uploadedFile = req.files.pdfFile;
-  let uploadPath = path.join(__dirname, 'uploads', uploadedFile.name);
+  const file1 = req.files.file1;
+  const file2 = req.files.file2;
 
-  try {
-    await uploadedFile.mv(uploadPath);
-    res.send('File uploaded!');
-  } catch (err) {
-    res.status(500).send(err);
-  }
+  const filePath1 = `/tmp/${file1.name}`;
+  const filePath2 = `/tmp/${file2.name}`;
+
+  // Save the files to the server
+  await file1.mv(filePath1);
+  await file2.mv(filePath2);
+
+  // Add a job to the queue
+  const job = await pdfQueue.add({ filePath1, filePath2 });
+
+  // Respond immediately with the job ID
+  res.send({ jobId: job.id });
 });
 
-app.post('/compare', async (req, res) => {
-  if (!req.files || Object.keys(req.files).length < 2) {
-    return res.status(400).send('Two files are required for comparison.');
+// Endpoint to check the status of a job
+app.get('/job/:id', async (req, res) => {
+  const jobId = req.params.id;
+  const job = await pdfQueue.getJob(jobId);
+
+  if (!job) {
+    return res.status(404).send('Job not found');
   }
 
-  let uploadedFile1 = req.files.pdfFile1;
-  let uploadedFile2 = req.files.pdfFile2;
-  let uploadPath1 = path.join(__dirname, 'uploads', uploadedFile1.name);
-  let uploadPath2 = path.join(__dirname, 'uploads', uploadedFile2.name);
+  const state = await job.getState();
+  const result = job.returnvalue;
 
-  try {
-    await uploadedFile1.mv(uploadPath1);
-    await uploadedFile2.mv(uploadPath2);
-
-    const job = await pdfQueue.add({ filePath1: uploadPath1, filePath2: uploadPath2 });
-
-    job.on('completed', (result) => {
-      res.json(result.returnvalue);
-    });
-
-    job.on('failed', (err) => {
-      res.status(500).send(err.message);
-    });
-
-  } catch (err) {
-    res.status(500).send(err);
-  }
+  res.send({ state, result });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
-
-server.setTimeout(2 * 60 * 1000); // Set server timeout to 2 minutes
