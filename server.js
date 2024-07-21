@@ -1,10 +1,10 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
-const pdfQueue = require('./queue');
 const path = require('path');
+const pdfQueue = require('./queue');
 
 const app = express();
-const port = process.env.PORT || 4003;
+const port = process.env.PORT || 3000;
 
 app.use(fileUpload());
 app.use(express.static('public'));
@@ -13,26 +13,41 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.post('/upload', async (req, res) => {
+  if (!req.files || !req.files.pdfFile) {
+    return res.status(400).send('No file was uploaded.');
+  }
+
+  const pdfFile = req.files.pdfFile;
+  const filePath = `/tmp/${pdfFile.name}`;
+
+  await pdfFile.mv(filePath);
+
+  const job = await pdfQueue.add({ filePath });
+
+  res.send({ jobId: job.id });
+});
+
 app.post('/compare', async (req, res) => {
-  if (!req.files || !req.files.file1 || !req.files.file2) {
+  if (!req.files || !req.files.pdfFile1 || !req.files.pdfFile2) {
     return res.status(400).send('No files were uploaded.');
   }
 
-  const file1 = req.files.file1;
-  const file2 = req.files.file2;
+  const pdfFile1 = req.files.pdfFile1;
+  const pdfFile2 = req.files.pdfFile2;
 
-  const filePath1 = `/tmp/${file1.name}`;
-  const filePath2 = `/tmp/${file2.name}`;
+  const filePath1 = `/tmp/${pdfFile1.name}`;
+  const filePath2 = `/tmp/${pdfFile2.name}`;
 
-  await file1.mv(filePath1);
-  await file2.mv(filePath2);
+  await pdfFile1.mv(filePath1);
+  await pdfFile2.mv(filePath2);
 
   const job = await pdfQueue.add({ filePath1, filePath2 });
 
   res.send({ jobId: job.id });
 });
 
-app.get('/job/:id', async (req, res) => {
+app.get('/status/:id', async (req, res) => {
   const jobId = req.params.id;
   const job = await pdfQueue.getJob(jobId);
 
@@ -43,7 +58,7 @@ app.get('/job/:id', async (req, res) => {
   const state = await job.getState();
   const result = job.returnvalue;
 
-  res.send({ state, result });
+  res.send({ status: state, result });
 });
 
 app.listen(port, () => {
