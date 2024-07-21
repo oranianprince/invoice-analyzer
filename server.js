@@ -7,7 +7,6 @@ const port = process.env.PORT || 4003;
 
 app.use(fileUpload());
 
-// Endpoint to handle PDF uploads and queue the processing job
 app.post('/compare', async (req, res) => {
   if (!req.files || !req.files.file1 || !req.files.file2) {
     return res.status(400).send('No files were uploaded.');
@@ -19,18 +18,14 @@ app.post('/compare', async (req, res) => {
   const filePath1 = `/tmp/${file1.name}`;
   const filePath2 = `/tmp/${file2.name}`;
 
-  // Save the files to the server
   await file1.mv(filePath1);
   await file2.mv(filePath2);
 
-  // Add a job to the queue
   const job = await pdfQueue.add({ filePath1, filePath2 });
 
-  // Respond immediately with the job ID
   res.send({ jobId: job.id });
 });
 
-// Endpoint to check the status of a job
 app.get('/job/:id', async (req, res) => {
   const jobId = req.params.id;
   const job = await pdfQueue.getJob(jobId);
