@@ -21,6 +21,7 @@ app.post('/upload', async (req, res) => {
     const filePath = `/tmp/${pdfFile.name}`;
     await pdfFile.mv(filePath);
     const job = await pdfQueue.add({ filePath });
+    console.log(`Job created with ID: ${job.id}`);
     res.send({ jobId: job.id });
   } catch (error) {
     console.error('Error in /upload:', error);
@@ -31,7 +32,7 @@ app.post('/upload', async (req, res) => {
 app.post('/compare', async (req, res) => {
   try {
     if (!req.files || !req.files.pdfFile1 || !req.files.pdfFile2) {
-      return res.status(400).send('No files were uploaded.');
+      return res.status(400).send('Two files are required for comparison.');
     }
     const pdfFile1 = req.files.pdfFile1;
     const pdfFile2 = req.files.pdfFile2;
@@ -40,6 +41,7 @@ app.post('/compare', async (req, res) => {
     await pdfFile1.mv(filePath1);
     await pdfFile2.mv(filePath2);
     const job = await pdfQueue.add({ filePath1, filePath2 });
+    console.log(`Comparison job created with ID: ${job.id}`);
     res.send({ jobId: job.id });
   } catch (error) {
     console.error('Error in /compare:', error);
@@ -56,6 +58,8 @@ app.get('/status/:id', async (req, res) => {
     }
     const state = await job.getState();
     const result = job.returnvalue;
+    console.log(`Job ${jobId} state:`, state);
+    console.log(`Job ${jobId} result:`, result);
     res.send({ status: state, result });
   } catch (error) {
     console.error('Error in /status:', error);
@@ -64,7 +68,7 @@ app.get('/status/:id', async (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Unhandled error:', err);
   res.status(500).send('Something broke!');
 });
 
