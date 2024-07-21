@@ -33,6 +33,7 @@ async function analyzeInvoice(pdfPath) {
     });
 
     const analysisResult = response.choices[0].message.content.trim();
+    console.log('Analysis result from OpenAI:', analysisResult); // Add this line for debugging
     return analysisResult;
   } catch (error) {
     console.error('Error in analyzeInvoice:', error);
