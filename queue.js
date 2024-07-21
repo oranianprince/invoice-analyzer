@@ -1,18 +1,20 @@
-const Bull = require('bull');
-const { analyzePdf } = require('./analyze'); // Adjust the path as necessary
+const Queue = require('bull');
+const analyze = require('./analyze');
 
-const redisUrl = process.env.REDIS_URL || 'your-default-redis-url';
+// Create a new queue for processing PDF analysis jobs
+const pdfQueue = new Queue('pdfQueue', process.env.REDIS_URL);
 
-const pdfQueue = new Bull('pdfQueue', redisUrl);
-
+// Define the processing function for the queue
 pdfQueue.process(async (job) => {
   const { filePath1, filePath2 } = job.data;
-
-  // Perform analysis (replace with your actual analysis logic)
-  const analysis1 = await analyzePdf(filePath1);
-  const analysis2 = await analyzePdf(filePath2);
-
-  return { analysis1, analysis2 };
+  try {
+    const analysisResult = await analyze(filePath1, filePath2);
+    return analysisResult;
+  } catch (error) {
+    console.error(`Error processing job ${job.id}:`, error);
+    throw error;
+  }
 });
 
+// Export the queue for use in other parts of the application
 module.exports = pdfQueue;
