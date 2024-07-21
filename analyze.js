@@ -9,10 +9,12 @@ const analyze = async (filePath) => {
     // Clean up the file after processing
     await fs.unlink(filePath);
     
-    return result;
+    // Ensure the result is a string
+    return JSON.stringify(result);
   } catch (error) {
     console.error(`Error analyzing file ${filePath}:`, error);
-    throw error;
+    // Return error message as a string
+    return JSON.stringify({ error: error.message });
   }
 };
 

@@ -7,11 +7,14 @@ pdfQueue.process(async (job, done) => {
   try {
     const { filePath, filePath1, filePath2 } = job.data;
     if (filePath) {
-      const analysis = await analyzePdf(filePath);
+      const analysisString = await analyzePdf(filePath);
+      const analysis = JSON.parse(analysisString);
       done(null, { analysis });
     } else if (filePath1 && filePath2) {
-      const analysis1 = await analyzePdf(filePath1);
-      const analysis2 = await analyzePdf(filePath2);
+      const analysis1String = await analyzePdf(filePath1);
+      const analysis2String = await analyzePdf(filePath2);
+      const analysis1 = JSON.parse(analysis1String);
+      const analysis2 = JSON.parse(analysis2String);
       done(null, { analysis1, analysis2 });
     } else {
       throw new Error('Invalid job data');
