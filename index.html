@@ -5,145 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invoice Analyzer</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    .tabs {
-      display: flex;
-      cursor: pointer;
-      margin-bottom: 20px;
-    }
-    .tab {
-      padding: 10px;
-      flex: 1;
-      text-align: center;
-      border-bottom: 2px solid transparent;
-    }
-    .tab.active {
-      border-bottom: 2px solid #5c6bc0;
-      font-weight: bold;
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    input[type="file"] {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    button {
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      background-color: #5c6bc0;
-      color: white;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background-color: #3f51b5;
-    }
-    #result, #compareResult {
-      margin-top: 20px;
-      white-space: pre-wrap; /* Keep formatting */
-      background: #f9f9f9;
-      padding: 15px;
-      border-radius: 5px;
-      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
-    }
-    h3, h4 {
-      color: #333;
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-    p, li {
-      color: #555;
-      font-size: 0.9em;
-    }
-    ul {
-      padding-left: 20px;
-    }
-    .progress-bar {
-      width: 0;
-      height: 20px;
-      background-color: #5c6bc0;
-      text-align: center;
-      color: white;
-      border-radius: 5px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      font-weight: bold;
-    }
-    td {
-      font-size: 0.9em;
-    }
+    /* ... (keep the existing styles) ... */
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Invoice Analyzer</h1>
-    <div class="tabs">
-      <div class="tab active" data-tab="single">Single PDF Analysis</div>
-      <div class="tab" data-tab="compare">Compare Two PDFs</div>
-    </div>
-    <div id="single" class="tab-content active">
-      <form id="uploadFormSingle" action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" id="pdfFileSingle" name="pdfFile" accept=".pdf" required>
-        <div id="uploadedFileSingle"></div>
-        <button type="submit">Upload and Analyze</button>
-      </form>
-      <button id="clearButtonSingle">Clear PDF</button>
-      <div class="progress-bar" id="progressBarSingle"></div>
-      <div id="result"></div>
-    </div>
-    <div id="compare" class="tab-content">
-      <form id="uploadFormCompare" action="/compare" method="POST" enctype="multipart/form-data">
-        <input type="file" id="pdfFileCompare1" name="pdfFile1" accept=".pdf" required>
-        <input type="file" id="pdfFileCompare2" name="pdfFile2" accept=".pdf" required>
-        <div id="uploadedFileCompare1"></div>
-        <div id="uploadedFileCompare2"></div>
-        <button type="submit">Upload and Compare</button>
-      </form>
-      <button id="clearButtonCompare">Clear PDFs</button>
-      <div class="progress-bar" id="progressBarCompare"></div>
-      <div id="compareResult"></div>
-    </div>
+    <!-- ... (keep the existing HTML structure) ... -->
   </div>
   <script>
-    // Tab functionality
+    // Tab functionality (keep as is)
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -160,29 +30,58 @@
       const fileInput = document.getElementById('pdfFileSingle');
       const uploadedFileDiv = document.getElementById('uploadedFileSingle');
       const progressBar = document.getElementById('progressBarSingle');
+      const resultDiv = document.getElementById('result');
+
       uploadedFileDiv.textContent = `Uploaded file: ${fileInput.files[0].name}`;
-      progressBar.style.width = '0%';
-      progressBar.textContent = '0%';
+      progressBar.style.width = '50%';
+      progressBar.textContent = 'Uploading...';
+      resultDiv.textContent = '';
+
       try {
-        const response = await fetch('http://localhost:3000/upload', {
+        const response = await fetch('/upload', {
           method: 'POST',
           body: formData
         });
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        const result = await response.json();
-        console.log(result); // Log the result to debug
-        if (typeof result.analysis === 'string') {
-          document.getElementById('result').innerHTML = result.analysis;
-        } else {
-          throw new Error('Analysis result is not a string');
-        }
+        const { jobId } = await response.json();
+        await checkStatusSingle(jobId);
       } catch (error) {
         console.error('Error:', error);
-        document.getElementById('result').textContent = `An error occurred: ${error.message}`;
+        resultDiv.textContent = `An error occurred: ${error.message}`;
+        progressBar.style.width = '100%';
+        progressBar.textContent = 'Error';
       }
     });
+
+    async function checkStatusSingle(jobId) {
+      const progressBar = document.getElementById('progressBarSingle');
+      const resultDiv = document.getElementById('result');
+      progressBar.style.width = '75%';
+      progressBar.textContent = 'Processing...';
+      let status = 'processing';
+      while (status === 'processing') {
+        const response = await fetch(`/status/${jobId}`);
+        const result = await response.json();
+        status = result.status;
+        if (status === 'completed') {
+          progressBar.style.width = '100%';
+          progressBar.textContent = 'Complete';
+          if (typeof result.result.analysis === 'string') {
+            resultDiv.innerHTML = result.result.analysis;
+          } else {
+            resultDiv.textContent = 'Unexpected analysis result format';
+          }
+        } else if (status === 'failed') {
+          progressBar.style.width = '100%';
+          progressBar.textContent = 'Error';
+          resultDiv.textContent = `An error occurred: ${result.result}`;
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Poll every second
+        }
+      }
+    }
 
     // Compare PDFs upload
     document.getElementById('uploadFormCompare').addEventListener('submit', async function(e) {
@@ -193,48 +92,61 @@
       const uploadedFileDiv1 = document.getElementById('uploadedFileCompare1');
       const uploadedFileDiv2 = document.getElementById('uploadedFileCompare2');
       const progressBar = document.getElementById('progressBarCompare');
+      const compareResultDiv = document.getElementById('compareResult');
+
       uploadedFileDiv1.textContent = `Uploaded file: ${fileInput1.files[0].name}`;
       uploadedFileDiv2.textContent = `Uploaded file: ${fileInput2.files[0].name}`;
-      progressBar.style.width = '0%';
-      progressBar.textContent = '0%';
+      progressBar.style.width = '50%';
+      progressBar.textContent = 'Uploading...';
+      compareResultDiv.textContent = '';
+
       try {
-        const response = await fetch('http://localhost:3000/compare', {
+        const response = await fetch('/compare', {
           method: 'POST',
           body: formData
         });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
         const { jobId } = await response.json();
-        checkStatus(jobId);
+        await checkStatusCompare(jobId);
       } catch (error) {
         console.error('Error:', error);
-        document.getElementById('compareResult').textContent = `An error occurred: ${error.message}`;
+        compareResultDiv.textContent = `An error occurred: ${error.message}`;
+        progressBar.style.width = '100%';
+        progressBar.textContent = 'Error';
       }
     });
 
-    async function checkStatus(jobId) {
+    async function checkStatusCompare(jobId) {
       const progressBar = document.getElementById('progressBarCompare');
-      const compareResult = document.getElementById('compareResult');
-      progressBar.style.width = '50%';
+      const compareResultDiv = document.getElementById('compareResult');
+      progressBar.style.width = '75%';
       progressBar.textContent = 'Processing...';
       let status = 'processing';
       while (status === 'processing') {
-        const response = await fetch(`http://localhost:3000/status/${jobId}`);
+        const response = await fetch(`/status/${jobId}`);
         const result = await response.json();
         status = result.status;
-        if (status === 'complete') {
+        if (status === 'completed') {
           progressBar.style.width = '100%';
           progressBar.textContent = 'Complete';
-          compareResult.innerHTML = `<div>${result.result.analysis1}</div><hr><div>${result.result.analysis2}</div>`;
-        } else if (status === 'error') {
+          if (typeof result.result.analysis1 === 'string' && typeof result.result.analysis2 === 'string') {
+            compareResultDiv.innerHTML = `<div>${result.result.analysis1}</div><hr><div>${result.result.analysis2}</div>`;
+          } else {
+            compareResultDiv.textContent = 'Unexpected analysis result format';
+          }
+        } else if (status === 'failed') {
           progressBar.style.width = '100%';
           progressBar.textContent = 'Error';
-          compareResult.textContent = `An error occurred: ${result.result}`;
+          compareResultDiv.textContent = `An error occurred: ${result.result}`;
         } else {
           await new Promise(resolve => setTimeout(resolve, 1000)); // Poll every second
         }
       }
     }
 
-    // Clear Single PDF upload
+    // Clear buttons (keep as is)
     document.getElementById('clearButtonSingle').addEventListener('click', function() {
       document.getElementById('pdfFileSingle').value = '';
       document.getElementById('uploadedFileSingle').textContent = '';
@@ -243,7 +155,6 @@
       document.getElementById('progressBarSingle').textContent = '';
     });
 
-    // Clear Compare PDFs upload
     document.getElementById('clearButtonCompare').addEventListener('click', function() {
       document.getElementById('pdfFileCompare1').value = '';
       document.getElementById('pdfFileCompare2').value = '';

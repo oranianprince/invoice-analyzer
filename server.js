@@ -22,10 +22,10 @@ app.post('/upload', async (req, res) => {
     await pdfFile.mv(filePath);
     const job = await pdfQueue.add({ filePath });
     console.log(`Job created with ID: ${job.id}`);
-    res.send({ jobId: job.id });
+    res.json({ jobId: job.id });
   } catch (error) {
     console.error('Error in /upload:', error);
-    res.status(500).send('An error occurred while processing your request.');
+    res.status(500).json({ error: 'An error occurred while processing your request.' });
   }
 });
 
@@ -42,10 +42,10 @@ app.post('/compare', async (req, res) => {
     await pdfFile2.mv(filePath2);
     const job = await pdfQueue.add({ filePath1, filePath2 });
     console.log(`Comparison job created with ID: ${job.id}`);
-    res.send({ jobId: job.id });
+    res.json({ jobId: job.id });
   } catch (error) {
     console.error('Error in /compare:', error);
-    res.status(500).send('An error occurred while processing your request.');
+    res.status(500).json({ error: 'An error occurred while processing your request.' });
   }
 });
 
@@ -54,22 +54,29 @@ app.get('/status/:id', async (req, res) => {
     const jobId = req.params.id;
     const job = await pdfQueue.getJob(jobId);
     if (!job) {
-      return res.status(404).send('Job not found');
+      return res.status(404).json({ error: 'Job not found' });
     }
     const state = await job.getState();
     const result = job.returnvalue;
     console.log(`Job ${jobId} state:`, state);
     console.log(`Job ${jobId} result:`, result);
-    res.send({ status: state, result });
+    
+    if (state === 'completed') {
+      res.json({ status: 'completed', result });
+    } else if (state === 'failed') {
+      res.json({ status: 'failed', result: job.failedReason });
+    } else {
+      res.json({ status: 'processing' });
+    }
   } catch (error) {
     console.error('Error in /status:', error);
-    res.status(500).send('An error occurred while checking job status.');
+    res.status(500).json({ error: 'An error occurred while checking job status.' });
   }
 });
 
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(500).send('Something broke!');
+  res.status(500).json({ error: 'Something broke!' });
 });
 
 app.listen(port, () => {
