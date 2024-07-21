@@ -1,10 +1,9 @@
 const Bull = require('bull');
-const path = require('path');
-const { analyzePdf } = require('./analyze'); // Assuming you have a separate analyze module for PDF analysis
+const { analyzePdf } = require('./analyze'); // Adjust the path as necessary
 
-const pdfQueue = new Bull('pdfQueue', {
-  redis: { port: 6379, host: '127.0.0.1' } // Use appropriate Redis connection settings
-});
+const redisUrl = process.env.REDIS_URL || 'your-default-redis-url';
+
+const pdfQueue = new Bull('pdfQueue', redisUrl);
 
 pdfQueue.process(async (job) => {
   const { filePath1, filePath2 } = job.data;
