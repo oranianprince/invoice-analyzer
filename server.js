@@ -1,11 +1,17 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const pdfQueue = require('./queue');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 4003;
 
 app.use(fileUpload());
+app.use(express.static('public'));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 app.post('/compare', async (req, res) => {
   if (!req.files || !req.files.file1 || !req.files.file2) {
